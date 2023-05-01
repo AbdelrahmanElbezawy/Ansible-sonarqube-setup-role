@@ -1,0 +1,19 @@
+galaxy_info:
+  author: abdelrahman-abdelmonem
+  role_name: sonarqube
+  description: install sonarqube in ubuntu instance using ansible role
+  company: iti
+
+  license: license (Ubuntu License)
+
+  min_ansible_version: 2.1
+
+  platforms:
+   - name: ubuntu server
+     versions: 22.04
+
+  galaxy_tags: 
+     - 'ubuntu'
+     - 'sonarqube'
+     - 'DevOps'
+     - 'iti-egypt'

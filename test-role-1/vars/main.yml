@@ -1,0 +1,16 @@
+---
+# vars file for test-role-1
+db_user: sonar
+db_password: sonar
+user_group: sonar
+db_name: sonarqube
+password: password
+sonar_download_url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-8.9.9.56886.zip
+sonar_arch_dir: sonarqube-8.9.9.56886.zip
+sonar_dir:  "/opt/sonarqube"
+local_port: sonar.jdbc.url=jdbc:postgresql://localhost:5432/sonarqube
+public_port: 9000
+public_ip: 0.0.0.0
+sh_path: "{{sonar_dir}}/sonarqube-8.9.9.56886/bin/linux-x86-64/sonar.sh"
+properties_path: "{{sonar_dir}}/sonarqube-8.9.9.56886/conf/sonar.properties"
+service_path: "/etc/systemd/system/sonar.service"

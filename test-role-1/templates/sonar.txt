@@ -1,0 +1,22 @@
+[Unit]
+Description=SonarQube service
+Requires=network.target
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart={{ sh_path }} start
+ExecStop={{ sh_path }} stop
+ExecReload={{ sh_path }} restart
+Restart=on-failure
+RestartSec=10
+
+User={{ db_user }}
+Group={{ user_group }}
+
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,20 @@
+# tasks file for test-role-1
+#install postgressql
+- name: install packages
+  become: true
+  apt: "name={{ item }} state=present"
+  with_items:
+    - postgresql
+    - postgresql-contrib
+
+- name: Enable postgresSQL
+  become: true
+  systemd:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: change password
+  ansible.builtin.user:
+    name: "{{ db_user }}"
+    password: "{{ password | password_hash('sha512') }}"

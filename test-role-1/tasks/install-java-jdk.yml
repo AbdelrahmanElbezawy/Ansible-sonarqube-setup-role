@@ -1,0 +1,19 @@
+# tasks file for test-role-1
+#install openjdk
+- name: update caches
+  become: true
+  apt:
+    update_cache: yes
+
+- name: install wget
+  apt:
+    name:  wget
+
+- name: install unzip
+  apt:
+    name : unzip
+
+- name: install openjdk-11-jdk
+  apt:
+    name: openjdk-11-jdk
+    state: present

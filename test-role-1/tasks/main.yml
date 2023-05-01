@@ -1,0 +1,50 @@
+---
+## tasks file for test-role-1
+###Prerequisites
+#
+#- name: "Set memory consumption by an application"
+#  sysctl:
+#    name: vm.max_map_count
+#    value: 524288
+#    state: present
+#
+- name: "Set the maximum number of open files on the Linux host"
+  sysctl:
+    name: fs.file-max
+    value: 131072
+    state: present
+
+- name: Run ulimit command 
+  shell:  ulimit -n 131072; ulimit -u 8192 &
+
+- name: Add or modify memlock, both soft and hard.
+  pam_limits:
+    domain: sonarqube
+    limit_type: '-'
+    limit_item: nofile
+    value: 65536
+
+- name: Add or modify memlock, both soft and hard.
+  pam_limits:
+    domain: sonarqube
+    limit_type: '-'
+    limit_item: nproc
+    value: 4096
+
+- name: Creates directory
+  file:
+    path: "{{sonar_dir}}"
+    state: directory
+
+- name: Create group
+  group:
+    name: "{{ user_group }}"
+    state: present
+
+- name: change password
+  ansible.builtin.user:
+    name: "{{ db_user }}"
+    group: "{{ user_group }}"
+    state: present
+    password: "{{ db_password | password_hash('sha512') }}"
+    home: "{{sonar_dir}}"

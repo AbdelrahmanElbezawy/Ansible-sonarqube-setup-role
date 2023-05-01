@@ -1,0 +1,27 @@
+- name: include vars
+  include_vars: "./test-role-1/vars/main.yml"
+
+- name: install psycopg2
+  become: true
+  apt:
+    name: python3-psycopg2
+    update_cache: true
+    
+- name: "Setup postgres database"
+  become: yes
+  become_method: sudo
+  become_user: "postgres"
+  postgresql_db: 
+    name: "{{ db_name }}" 
+    state: present  
+ 
+- name: "Create db user"
+  postgresql_user:
+    state: present
+    db: "{{ db_name }}" 
+    name: "{{ db_user }}"
+    password: "{{db_password}}"
+    priv: all
+  become: yes
+  become_method: sudo
+  become_user: postgres

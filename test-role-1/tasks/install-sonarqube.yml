@@ -1,0 +1,102 @@
+- name: "Download SonarQube binaries"
+  get_url:
+    url: "{{ sonar_download_url }}"
+    dest: "/tmp/{{ sonar_arch_dir }}"
+
+- name: "Expand SonarQube binaries"
+  unarchive:
+    src: "/tmp/{{ sonar_arch_dir }}"
+    dest: "{{ sonar_dir }}"
+    owner: "{{ db_user }}"
+    group: "{{ user_group }}"
+    copy: no
+
+- name: Change sonarqube directory permission
+  file:
+    path: "{{ sonar_dir }}"
+    owner: "{{ db_user }}"
+    group: "{{ user_group }}"
+    state: directory
+
+- name: set username
+  ansible.builtin.lineinfile:
+    path: '{{ properties_path }}'
+    regexp: '^#sonar.jdbc.username='
+    line: 'sonar.jdbc.username={{ db_user }}'
+    backrefs: yes
+
+- name: set password
+  ansible.builtin.lineinfile:
+    path: '{{ properties_path }}'
+    regexp: '^#sonar.jdbc.password='
+    line: 'sonar.jdbc.password={{ db_password }}'
+    backrefs: yes
+
+- name: set local-port
+  ansible.builtin.lineinfile:
+    path: '{{ properties_path }}'
+    regexp: '^#sonar.jdbc.url=jdbc:postgresql'
+    line: '{{ local_port }}'
+    backrefs: yes  
+
+- name: set to public-ip
+  ansible.builtin.lineinfile:
+    path: '{{ properties_path }}'
+    regexp: '^#sonar.web.host='
+    line: 'sonar.web.host={{ public_ip }}'
+    backrefs: yes  
+
+- name: set public-port
+  ansible.builtin.lineinfile:
+    path: '{{ properties_path }}'
+    regexp: '^#sonar.web.port='
+    line: 'sonar.web.port={{ public_port }}'
+    backrefs: yes  
+
+- name: Edit application ip
+  ansible.builtin.lineinfile:
+    path: '{{ sh_path }}'
+    regexp: '^#RUN_AS_USER='
+    line: 'RUN_AS_USER= {{ db_user }}'
+    backrefs: yes
+
+- name: copy sonar service file
+  template:
+    dest: "{{service_path}}"
+    src: "../templates/sonar.txt"
+    owner: root
+    group: root
+    mode: 0755
+  register: systemd_service
+  when: "ansible_service_mgr == 'systemd'"
+
+
+
+- name: Force systemd to reread configs
+  systemd:
+    daemon_reload: yes
+  tags: skip_ansible_lint
+  when: systemd_service is defined and systemd_service.changed
+
+- name: "Ensure SonarQube is running and set to start on boot."
+  service:
+    name: sonar
+    state: started
+    enabled: yes
+
+- name: "Ensure SonarQube files permissions"
+  file:
+    path: "{{ sonar_dir }}"
+    state: directory
+    recurse: yes
+    owner: "{{ db_user }}"
+    group: "{{ user_group }}"
+    mode: "o-w"
+
+- name: "Ensure SonarQube configuration"
+  file:
+    path: "{{ properties_path }}"
+    owner: "{{ db_user }}"
+    group: "{{ user_group }}"
+    mode: "u=rw,g=,o="
+  no_log: true
